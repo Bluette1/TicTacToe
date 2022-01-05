@@ -1,18 +1,39 @@
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, ImageBackground } from "react-native";
-import { TouchableWithoutFeedback } from "react-native-web";
+import { StyleSheet, View, ImageBackground, Pressable } from "react-native";
 import bg from "./assets/bg.jpeg";
 
 export default function App() {
+  const [map, setmap] = useState([
+    ["O", "", "O"],
+    ["", "X", "X"],
+    ["O", "", ""],
+  ]);
+
+  const onPress = () => {
+    console.warn("hello");
+  };
   return (
     <View style={styles.container}>
       <ImageBackground source={bg} style={styles.bg} resizeMode="contain">
         <View style={styles.map}>
-          <View style={styles.circle}></View>
-          <View style={styles.cross}>
-            <View style={styles.crossLine}></View>
-            <View style={[styles.crossLine, styles.crossLineReversed]}></View>
-          </View>
+          {map.map((row) => (
+            <View style={styles.row}>
+              {row.map((cell) => (
+                <Pressable onPress={() => onPress()} style={styles.cell}>
+                  {cell === "O" && <View style={styles.circle}></View>}
+                  {cell === "X" && (
+                    <View style={styles.cross}>
+                      <View style={styles.crossLine}></View>
+                      <View
+                        style={[styles.crossLine, styles.crossLineReversed]}
+                      ></View>
+                    </View>
+                  )}
+                </Pressable>
+              ))}
+            </View>
+          ))}
         </View>
       </ImageBackground>
 
@@ -36,11 +57,7 @@ const styles = StyleSheet.create({
     paddingTop: 15,
   },
   circle: {
-    position: "absolute",
-    left: 1 * 87,
-    top: 2 * 92,
-    height: 73,
-    width: 73,
+    flex: 1,
     borderWidth: 10,
     borderColor: "white",
     borderRadius: 50,
@@ -48,18 +65,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     margin: 10,
   },
-  cross: { width: 75, height: 75},
+  cross: { width: "100%", height: "100%", borderWidth: 2, borderColor: "red" },
   map: {
     borderWidth: 10,
     borderColor: "white",
     width: "80%",
     aspectRatio: 1,
+    padding: 5,
+  },
+  row: {
+    flex: 1,
+    flexDirection: "row",
+  },
+  cell: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "white",
   },
   crossLine: {
     position: "absolute",
-    left: 32.5,
+    left: "48%",
     width: 10,
-    height: 70,
+    height: "100%",
     borderRadius: 5,
     backgroundColor: "white",
     transform: [{ rotate: "45deg" }],
