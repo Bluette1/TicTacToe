@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -20,6 +20,12 @@ export default function App() {
   const [map, setMap] = useState(emptyMap);
 
   const [currentTurn, setCurrentTurn] = useState("X");
+  
+  useEffect(()=>{
+    if (currentTurn == 'O') {
+      botTurn();
+    }
+  }, [currentTurn]);
 
   const onPress = (rowIndex, columnIndex) => {
     if (map[rowIndex][columnIndex] !== "") {
@@ -135,6 +141,20 @@ export default function App() {
   const resetGame = () => {
     setMap(emptyMap);
     setCurrentTurn("X");
+  };
+
+  const botTurn = () => {
+    // Collect all possible options
+    const possibleOptions = [];
+    map.forEach((row, rowIndex) => row.forEach((cell, columnIndex)=> {
+      if (cell === '') {
+        possibleOptions.push({row: rowIndex, col: columnIndex});
+      }
+    }));
+
+    // Choose the best option
+    const chosenOption = possibleOptions[Math.floor(Math.random() * possibleOptions.length)];
+    onPress(chosenOption.row, chosenOption.col);
   };
 
   return (
