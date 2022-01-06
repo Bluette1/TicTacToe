@@ -6,7 +6,7 @@ import {
   ImageBackground,
   Pressable,
   Alert,
-  Text
+  Text,
 } from "react-native";
 import bg from "./assets/bg.jpeg";
 
@@ -21,7 +21,6 @@ export default function App() {
   const [currentTurn, setCurrentTurn] = useState("X");
 
   const onPress = (rowIndex, columnIndex) => {
-    console.warn("hello", rowIndex, columnIndex);
     if (map[rowIndex][columnIndex] !== "") {
       Alert.alert("Position already occupied");
       return;
@@ -29,7 +28,7 @@ export default function App() {
 
     setMap((existingMap) => {
       const updatedMap = [...existingMap];
-      updatedMap[rowIndex][columnIndex] = currentTurn;
+      updatedMap[rowIndex][columnIndex] = currentTurn.toUpperCase();
       return updatedMap;
     });
 
@@ -40,7 +39,6 @@ export default function App() {
     } else {
       checkTieState();
     }
-    
   };
 
   const getWinner = () => {
@@ -53,8 +51,8 @@ export default function App() {
         return ["X", `Row: ${i}`];
       }
 
-      if (isRowOWinning) {    
-      return ["O", `Row: ${i}`];
+      if (isRowOWinning) {
+        return ["O", `Row: ${i}`];
       }
     }
 
@@ -127,10 +125,9 @@ export default function App() {
 
   const checkTieState = () => {
     if (!map.some((row) => row.some((cell) => cell === ""))) {
-      Alert.alert("It's a tie!", 'tie', [
+      Alert.alert("It's a tie!", "tie", [
         { text: "Restart", onPress: resetGame },
       ]);
-
     }
   };
 
@@ -142,7 +139,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <ImageBackground source={bg} style={styles.bg} resizeMode="contain">
-        <Text>Current turn: {currentTurn}</Text>
+        <Text style={styles.currentTurn}>Current turn: {currentTurn}</Text>
         <View style={styles.map}>
           {map.map((row, rowIndex) => (
             <View key={`row-${rowIndex}`} style={styles.row}>
@@ -224,5 +221,11 @@ const styles = StyleSheet.create({
   },
   crossLineReversed: {
     transform: [{ rotate: "-45deg" }],
+  },
+  currentTurn: {
+    fontSize: 24,
+    color: "white",
+    position: "absolute",
+    top: 50
   },
 });
