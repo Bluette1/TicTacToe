@@ -6,6 +6,7 @@ import {
   ImageBackground,
   Pressable,
   Alert,
+  Text
 } from "react-native";
 import bg from "./assets/bg.jpeg";
 
@@ -33,22 +34,27 @@ export default function App() {
     });
 
     setCurrentTurn(currentTurn === "X" ? "O" : "X");
-    checkWinningState();
-    checkTieState();
+    const winner = getWinner();
+    if (winner) {
+      gameWon(winner[0], winner[1]);
+    } else {
+      checkTieState();
+    }
+    
   };
 
-  const checkWinningState = () => {
+  const getWinner = () => {
     // Check rows
     for (let i = 0; i < 3; i += 1) {
       const isRowXWinning = map[i].every((cell) => cell === "X");
       const isRowOWinning = map[i].every((cell) => cell === "O");
 
       if (isRowXWinning) {
-        gameWon("X", `Row: ${i}`);
+        return ["X", `Row: ${i}`];
       }
 
-      if (isRowOWinning) {
-        gameWon("O", `Row: ${i}`);
+      if (isRowOWinning) {    
+      return ["O", `Row: ${i}`];
       }
     }
 
@@ -67,13 +73,11 @@ export default function App() {
       }
 
       if (isColumnXWinner) {
-        gameWon("X", `Column: ${i}`);
-        break;
+        return ["X", `Column: ${i}`];
       }
 
       if (isColumnOWinner) {
-        gameWon("O", `Column: ${i}`);
-        break;
+        return ["O", `Column: ${i}`];
       }
     }
 
@@ -100,17 +104,18 @@ export default function App() {
       }
     }
     if (isDiagonalMainXWinning) {
-      gameWon("X", "Main diagonal");
+      return ["X", "Main diagonal"];
     }
     if (isDiagonalMainOWinning) {
-      gameWon("O", "Main diagonal");
+      return ["O", "Main diagonal"];
     }
 
     if (isDiagonalMinorXWinning) {
-      gameWon("X", "Minor diagonal");
+      return ["X", "Minor diagonal"];
     }
+
     if (isDiagonalMinorOWinning) {
-      gameWon("O", "Minor diagonal");
+      return ["O", "Minor diagonal"];
     }
   };
 
@@ -137,6 +142,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <ImageBackground source={bg} style={styles.bg} resizeMode="contain">
+        <Text>Current turn: {currentTurn}</Text>
         <View style={styles.map}>
           {map.map((row, rowIndex) => (
             <View key={`row-${rowIndex}`} style={styles.row}>
