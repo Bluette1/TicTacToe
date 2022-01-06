@@ -4,7 +4,7 @@ import Cross from "./Cross";
 const Cell = ({cell, onPress, rowIndex, columnIndex}) => {
   return (
     <Pressable
-      onPress={() => onPress(rowIndex, columnIndex)}
+      onPress={onPress}
       style={styles.cell}
     >
       {cell === "O" && <View style={styles.circle}></View>}

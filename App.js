@@ -9,6 +9,7 @@ import {
   Text,
 } from "react-native";
 import bg from "./assets/bg.jpeg";
+import Cell from "./src/components/Cell";
 
 export default function App() {
   const emptyMap = [
@@ -144,21 +145,7 @@ export default function App() {
           {map.map((row, rowIndex) => (
             <View key={`row-${rowIndex}`} style={styles.row}>
               {row.map((cell, columnIndex) => (
-                <Pressable
-                  key={`row-${rowIndex}--col${columnIndex}`}
-                  onPress={() => onPress(rowIndex, columnIndex)}
-                  style={styles.cell}
-                >
-                  {cell === "O" && <View style={styles.circle}></View>}
-                  {cell === "X" && (
-                    <View style={styles.cross}>
-                      <View style={styles.crossLine}></View>
-                      <View
-                        style={[styles.crossLine, styles.crossLineReversed]}
-                      ></View>
-                    </View>
-                  )}
-                </Pressable>
+                <Cell key={`row-${rowIndex}--col${columnIndex}`} cell={cell} onPress={() => onPress(rowIndex, columnIndex)} columnIndex={columnIndex} rowIndex={rowIndex} />
               ))}
             </View>
           ))}
@@ -184,16 +171,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingTop: 15,
   },
-  circle: {
-    flex: 1,
-    borderWidth: 10,
-    borderColor: "white",
-    borderRadius: 50,
-    alignItems: "center",
-    justifyContent: "center",
-    margin: 10,
-  },
-  cross: { width: "100%", height: "100%" },
   map: {
     borderWidth: 10,
     borderColor: "white",
@@ -205,27 +182,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
   },
-  cell: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "white",
-  },
-  crossLine: {
-    position: "absolute",
-    left: "48%",
-    width: 10,
-    height: "100%",
-    borderRadius: 5,
-    backgroundColor: "white",
-    transform: [{ rotate: "45deg" }],
-  },
-  crossLineReversed: {
-    transform: [{ rotate: "-45deg" }],
-  },
   currentTurn: {
     fontSize: 24,
     color: "white",
     position: "absolute",
-    top: 50
+    top: 50,
   },
 });
