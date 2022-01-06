@@ -21,11 +21,7 @@ export default function App() {
 
   const [currentTurn, setCurrentTurn] = useState("X");
   
-  useEffect(()=>{
-    if (currentTurn == 'O') {
-      botTurn();
-    }
-  }, [currentTurn]);
+  const copyArray = (original) => JSON.parse(JSON.stringify(original));
 
   const onPress = (rowIndex, columnIndex) => {
     if (map[rowIndex][columnIndex] !== "") {
@@ -40,19 +36,13 @@ export default function App() {
     });
 
     setCurrentTurn(currentTurn === "X" ? "O" : "X");
-    const winner = getWinner();
-    if (winner) {
-      gameWon(winner[0], winner[1]);
-    } else {
-      checkTieState();
-    }
   };
 
-  const getWinner = () => {
+  const getWinner = (winnerMap) => {
     // Check rows
     for (let i = 0; i < 3; i += 1) {
-      const isRowXWinning = map[i].every((cell) => cell === "X");
-      const isRowOWinning = map[i].every((cell) => cell === "O");
+      const isRowXWinning = winnerMap[i].every((cell) => cell === "X");
+      const isRowOWinning = winnerMap[i].every((cell) => cell === "O");
 
       if (isRowXWinning) {
         return ["X", `Row: ${i}`];
@@ -68,11 +58,11 @@ export default function App() {
       let isColumnXWinner = true;
       let isColumnOWinner = true;
       for (let j = 0; j < 3; j += 1) {
-        if (map[j][i] !== "X") {
+        if (winnerMap[j][i] !== "X") {
           isColumnXWinner = false;
         }
 
-        if (map[j][i] !== "O") {
+        if (winnerMap[j][i] !== "O") {
           isColumnOWinner = false;
         }
       }
@@ -92,19 +82,19 @@ export default function App() {
     let isDiagonalMinorXWinning = true;
     let isDiagonalMinorOWinning = true;
     for (let i = 0; i < 3; i += 1) {
-      if (map[i][i] !== "X") {
+      if (winnerMap[i][i] !== "X") {
         isDiagonalMainXWinning = false;
       }
 
-      if (map[i][i] !== "O") {
+      if (winnerMap[i][i] !== "O") {
         isDiagonalMainOWinning = false;
       }
 
-      if (map[i][2 - i] !== "X") {
+      if (winnerMap[i][2 - i] !== "X") {
         isDiagonalMinorXWinning = false;
       }
 
-      if (map[i][2 - i] !== "O") {
+      if (winnerMap[i][2 - i] !== "O") {
         isDiagonalMinorOWinning = false;
       }
     }
@@ -130,6 +120,22 @@ export default function App() {
     ]);
   };
 
+  useEffect(()=>{
+    if (currentTurn == 'O') {
+      botTurn();
+    }
+  }, [currentTurn]);
+
+  useEffect(() => {
+    const winner = getWinner(map);
+    if (winner) {
+      gameWon(winner[0], winner[1]);
+    } else {
+      checkTieState();
+    }
+  }, [map]);
+
+
   const checkTieState = () => {
     if (!map.some((row) => row.some((cell) => cell === ""))) {
       Alert.alert("It's a tie!", "tie", [
@@ -151,10 +157,43 @@ export default function App() {
         possibleOptions.push({row: rowIndex, col: columnIndex});
       }
     }));
+    let chosenOption;
 
-    // Choose the best option
-    const chosenOption = possibleOptions[Math.floor(Math.random() * possibleOptions.length)];
-    onPress(chosenOption.row, chosenOption.col);
+      //Greedy strategy
+      // Check if bot wins if it takes one of the possible positions
+      possibleOptions.forEach((possibleOption)=>{
+        const mapCopy = copyArray(map);
+        mapCopy[possibleOption.row][possibleOption.col] = 'O';
+        const winner = getWinner(mapCopy);
+        if (winner && winner[0] === 'O') {
+          // Defend that position
+          chosenOption = possibleOption;
+        }
+      });
+
+    //Defend strategy
+      // Check if the opponent wins if he takes one of the possible positions
+      if (!chosenOption) {
+        possibleOptions.forEach((possibleOption)=>{
+          const mapCopy = copyArray(map);
+          console.log(mapCopy)
+          mapCopy[possibleOption.row][possibleOption.col] = 'X';
+          const winner = getWinner(mapCopy);
+          if (winner && winner[0] === 'X') {
+            // Defend that position
+            chosenOption = possibleOption;
+          }
+        });
+      }
+
+    // Choose random option
+    if (!chosenOption) {
+      chosenOption = possibleOptions[Math.floor(Math.random() * possibleOptions.length)];
+    }
+
+    if (chosenOption) {
+      onPress(chosenOption.row, chosenOption.col)
+    };
   };
 
   return (
