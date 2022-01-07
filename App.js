@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import {
-  StyleSheet,
-  View,
-  ImageBackground,
-  Pressable,
-  Alert,
-  Text,
-} from "react-native";
+import { StyleSheet, View, ImageBackground, Alert, Text } from "react-native";
 import bg from "./assets/bg.jpeg";
 import Cell from "./src/components/Cell";
 
@@ -18,9 +11,9 @@ export default function App() {
     ["", "", ""],
   ];
   const [map, setMap] = useState(emptyMap);
-
   const [currentTurn, setCurrentTurn] = useState("X");
-  
+  const [gameMode, setMode] = useState("BOT_MEDIUM"); //LOCAL, BOT_EASY, BOT_MEDIUM
+
   const copyArray = (original) => JSON.parse(JSON.stringify(original));
 
   const onPress = (rowIndex, columnIndex) => {
@@ -120,8 +113,8 @@ export default function App() {
     ]);
   };
 
-  useEffect(()=>{
-    if (currentTurn == 'O') {
+  useEffect(() => {
+    if (currentTurn == "O" && gameMode !== "LOCAL") {
       botTurn();
     }
   }, [currentTurn]);
@@ -134,7 +127,6 @@ export default function App() {
       checkTieState();
     }
   }, [map]);
-
 
   const checkTieState = () => {
     if (!map.some((row) => row.some((cell) => cell === ""))) {
@@ -152,48 +144,52 @@ export default function App() {
   const botTurn = () => {
     // Collect all possible options
     const possibleOptions = [];
-    map.forEach((row, rowIndex) => row.forEach((cell, columnIndex)=> {
-      if (cell === '') {
-        possibleOptions.push({row: rowIndex, col: columnIndex});
-      }
-    }));
+    map.forEach((row, rowIndex) =>
+      row.forEach((cell, columnIndex) => {
+        if (cell === "") {
+          possibleOptions.push({ row: rowIndex, col: columnIndex });
+        }
+      })
+    );
     let chosenOption;
 
-      //Greedy strategy
+    if (gameMode === "BOT_MEDIUM") {
+      //Greedy strategy/Attack
       // Check if bot wins if it takes one of the possible positions
-      possibleOptions.forEach((possibleOption)=>{
+      possibleOptions.forEach((possibleOption) => {
         const mapCopy = copyArray(map);
-        mapCopy[possibleOption.row][possibleOption.col] = 'O';
+        mapCopy[possibleOption.row][possibleOption.col] = "O";
         const winner = getWinner(mapCopy);
-        if (winner && winner[0] === 'O') {
+        if (winner && winner[0] === "O") {
           // Defend that position
           chosenOption = possibleOption;
         }
       });
 
-    //Defend strategy
+      //Defend strategy
       // Check if the opponent wins if he takes one of the possible positions
       if (!chosenOption) {
-        possibleOptions.forEach((possibleOption)=>{
+        possibleOptions.forEach((possibleOption) => {
           const mapCopy = copyArray(map);
-          console.log(mapCopy)
-          mapCopy[possibleOption.row][possibleOption.col] = 'X';
+          mapCopy[possibleOption.row][possibleOption.col] = "X";
           const winner = getWinner(mapCopy);
-          if (winner && winner[0] === 'X') {
+          if (winner && winner[0] === "X") {
             // Defend that position
             chosenOption = possibleOption;
           }
         });
       }
+    }
 
     // Choose random option
     if (!chosenOption) {
-      chosenOption = possibleOptions[Math.floor(Math.random() * possibleOptions.length)];
+      chosenOption =
+        possibleOptions[Math.floor(Math.random() * possibleOptions.length)];
     }
 
     if (chosenOption) {
-      onPress(chosenOption.row, chosenOption.col)
-    };
+      onPress(chosenOption.row, chosenOption.col);
+    }
   };
 
   return (
@@ -204,10 +200,51 @@ export default function App() {
           {map.map((row, rowIndex) => (
             <View key={`row-${rowIndex}`} style={styles.row}>
               {row.map((cell, columnIndex) => (
-                <Cell key={`row-${rowIndex}--col${columnIndex}`} cell={cell} onPress={() => onPress(rowIndex, columnIndex)} columnIndex={columnIndex} rowIndex={rowIndex} />
+                <Cell
+                  key={`row-${rowIndex}--col${columnIndex}`}
+                  cell={cell}
+                  onPress={() => onPress(rowIndex, columnIndex)}
+                  columnIndex={columnIndex}
+                  rowIndex={rowIndex}
+                />
               ))}
             </View>
           ))}
+        </View>
+        <View style={styles.buttons}>
+          <Text
+            onPress={() => setMode("LOCAL")}
+            style={[
+              styles.button,
+              { backgroundColor: gameMode === "LOCAL" ? "grey" : "black" },
+            ]}
+          >
+            Local
+          </Text>
+          <Text
+            onPress={() => setMode("BOT_EASY")}
+            style={[
+              styles.button,
+              {
+                backgroundColor:
+                  gameMode === "BOT_EASY" ? "grey" : "black",
+              },
+            ]}
+          >
+            Easy Bot
+          </Text>
+          <Text
+            onPress={() => setMode("BOT_MEDIUM")}
+            style={[
+              styles.button,
+              {
+                backgroundColor:
+                  gameMode === "BOT_MEDIUM" ? "grey" : "black",
+              },
+            ]}
+          >
+            Medium Bot
+          </Text>
         </View>
       </ImageBackground>
 
@@ -246,5 +283,18 @@ const styles = StyleSheet.create({
     color: "white",
     position: "absolute",
     top: 50,
+  },
+  buttons: {
+    position: "absolute",
+    bottom: 50,
+    flexDirection: "row",
+  },
+  button: {
+    color: "white",
+    margin: 10,
+    fontSize: 16,
+    backgroundColor: "black",
+    padding: 10,
+    paddingHorizontal: 15,
   },
 });
